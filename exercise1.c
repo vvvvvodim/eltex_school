@@ -7,23 +7,34 @@
 #define MAX_LENGTH 50
 
 typedef struct {
+    char work[MAX_LENGTH];
+    char home[MAX_LENGTH];
+} Email;
+
+typedef struct {
+    char social_network[MAX_LENGTH];
+    char social_address[MAX_LENGTH];
+    char nickname[MAX_LENGTH];
+} SocialProfile;
+
+typedef struct {
     char name[MAX_LENGTH];
     char job[MAX_LENGTH];
     char phone[MAX_LENGTH];
-    char email[MAX_LENGTH];
-    char social[MAX_LENGTH];
-    char telegram[MAX_LENGTH];
+    Email email;
+    SocialProfile social;
 } Contact;
 
 // Функция добавления контакта
 void addContact(Contact contacts[], int* count) {
     if (*count >= MAX_CONTACTS) {
-        printf("Ошибка: Достигнуто максимальное количество контактов.\\n");
+        printf("Ошибка: Достигнуто максимальное количество контактов.\n");
         return;
     }
 
     Contact newContact;
-    //memset(&newContact, 0, sizeof(Contact));
+    Email newEmail;
+    SocialProfile newSocial;
 
     printf("Введите имя: ");
     scanf("%s", newContact.name);
@@ -34,19 +45,29 @@ void addContact(Contact contacts[], int* count) {
     printf("Введите номер телефона: ");
     scanf("%s", newContact.phone);
 
-    printf_s("Введите адрес электронной почты: ");
-    scanf("%s", newContact.email);
+    printf_s("Введите адрес рабочей электронной почты: ");
+    scanf("%s", newEmail.work);
 
-    printf_s("Введите ссылку на страницу в соцсети: ");
-    scanf("%s", newContact.social);
+    printf_s("Введите адрес домашней электронной почты: ");
+    scanf("%s", newEmail.home);
 
-    printf_s("Введите имя пользователя в Telegram: ");
-    scanf("%s", newContact.telegram);
+    newContact.email = newEmail;
+
+    printf_s("Введите социальную сеть: ");
+    scanf("%s", newSocial.social_network);
+
+    printf_s("Введите адрес в этой социальной сети: ");
+    scanf("%s", newSocial.social_address);
+
+    printf_s("Введите никнейм в этой социальной сети: ");
+    scanf("%s", newSocial.nickname);
+
+    newContact.social = newSocial;
 
     contacts[*count] = newContact;
     (*count)++;
 
-    printf("Контакт успешно добавлен.\n");
+    printf("Контакт успешно добавлен.\n\n");
 }
 
 // Функция изменения контакта
@@ -71,16 +92,22 @@ void editContact(Contact contacts[], int count) {
             printf("Введите новый номер телефона: ");
             scanf("%s", contacts[i].phone);
 
-            printf("Введите новый адрес электронной почты: ");
-            scanf("%s", contacts[i].email);
+            printf("Введите новый адрес рабочей электронной почты: ");
+            scanf("%s", contacts[i].email.work);
 
-            printf("Введите новую ссылку на страницу в соцсети: ");
-            scanf("%s", contacts[i].social);
+            printf("Введите новый адрес домашней электронной почты: ");
+            scanf("%s", contacts[i].email.home);
 
-            printf("Введите новый профиль в мессенджере:");
-            scanf("%s", contacts[i].telegram);
+            printf("Введите новую социальную сеть: ");
+            scanf("%s", contacts[i].social.social_network);
 
-            printf("Контакт успешно отредактирован.\n");
+            printf("Введите новый адрес на социальную сеть: ");
+            scanf("%s", contacts[i].social.social_address);
+
+            printf("Введите новый никнейм в социальной сети: ");
+            scanf("%s", contacts[i].social.nickname);
+
+            printf("Контакт успешно отредактирован.\n\n");
             return;
         }
     }
@@ -105,7 +132,7 @@ void deleteContact(Contact contacts[], int* count) {
             for (int j = i; j < *count; j++) {
                 contacts[j] = contacts[j + 1];
             }
-            printf("Контакт успешно удален.\n");
+            printf("Контакт успешно удален.\n\n");
             return;
         }
     }
@@ -118,9 +145,11 @@ void printContact(Contact contact) {
     printf("Имя: %s\n", contact.name);
     printf("Место работы: %s\n", contact.job);
     printf("Номер телефона: %s\n", contact.phone);
-    printf("Адрес электронной почты: %s\n", contact.email);
-    printf("Ссылка на страницу в соцсети: %s\n", contact.social);
-    printf("Профиль в мессенджере: %s\n\n", contact.telegram);
+    printf("Адрес рабочей электройнной почты: %s\n", contact.email.work);
+    printf("Адрес домашней электройнной почты: %s\n", contact.email.work);
+    printf("Название социальной сети: %s\n", contact.social.social_network);
+    printf("Ссылка на социальную сеть: %s\n", contact.social.social_address);
+    printf("Никнейм: %s\n\n", contact.social.nickname);
 }
 
 int main() {
