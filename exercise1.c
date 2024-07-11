@@ -22,11 +22,18 @@ typedef struct {
     char job[MAX_LENGTH];
     char phone[MAX_LENGTH];
     Email email;
-    SocialProfile social;
+    SocialProfile *social;
+    int social_count;
 } Contact;
 
+
+// Вспомогательная функция очистки буфера ввода
+void cleanBuff() {
+    fseek(stdin, 0, SEEK_END);
+}
+
 // Функция добавления контакта
-void addContact(Contact contacts[], int* count) {
+void addContact(Contact contacts[], int *count) {
     if (*count >= MAX_CONTACTS) {
         printf("Ошибка: Достигнуто максимальное количество контактов.\n");
         return;
@@ -34,35 +41,67 @@ void addContact(Contact contacts[], int* count) {
 
     Contact newContact;
     Email newEmail;
-    SocialProfile newSocial;
+    SocialProfile *newSocial = NULL;
+    int social_count = 0;
+    char moreSocial;
 
     printf("Введите имя: ");
     scanf("%s", newContact.name);
 
     printf("Введите место работы: ");
-    scanf("%s", newContact.job);
+    cleanBuff();
+    fgets(newContact.job, sizeof(newContact.job), stdin);
+    newContact.job[strcspn(newContact.job, "\n")] = '\0';
 
     printf("Введите номер телефона: ");
-    scanf("%s", newContact.phone);
+    cleanBuff();
+    fgets(newContact.phone, sizeof(newContact.phone), stdin);
+    newContact.phone[strcspn(newContact.phone, "\n")] = '\0';
 
-    printf_s("Введите адрес рабочей электронной почты: ");
-    scanf("%s", newEmail.work);
+    printf("Введите адрес рабочей электронной почты: ");
+    cleanBuff();
+    fgets(newEmail.work, sizeof(newEmail.work), stdin);
+    newEmail.work[strcspn(newEmail.work, "\n")] = '\0';
 
-    printf_s("Введите адрес домашней электронной почты: ");
-    scanf("%s", newEmail.home);
+    printf("Введите адрес домашней электронной почты: ");
+    cleanBuff();
+    fgets(newEmail.home, sizeof(newEmail.home), stdin);
+    newEmail.home[strcspn(newEmail.home, "\n")] = '\0';
 
     newContact.email = newEmail;
 
-    printf_s("Введите социальную сеть: ");
-    scanf("%s", newSocial.social_network);
+    do {
+        newSocial = realloc(newSocial, (social_count + 1) * sizeof(SocialProfile));
+        if (newSocial == NULL) {
+            printf("Ошибка выделения памяти для социальных сетей.\n");
+            return;
+        }
 
-    printf_s("Введите адрес в этой социальной сети: ");
-    scanf("%s", newSocial.social_address);
+        printf("Введите социальную сеть: ");
+        cleanBuff();
+        fgets(newSocial[social_count].social_network, sizeof(newSocial[social_count].social_network), stdin);
+        newSocial[social_count].social_network[strcspn(newSocial[social_count].social_network, "\n")] = '\0';
 
-    printf_s("Введите никнейм в этой социальной сети: ");
-    scanf("%s", newSocial.nickname);
+        printf("Введите адрес в этой социальной сети: ");
+        cleanBuff();
+        fgets(newSocial[social_count].social_address, sizeof(newSocial[social_count].social_address), stdin);
+        newSocial[social_count].social_address[strcspn(newSocial[social_count].social_address, "\n")] = '\0';
+
+        printf("Введите никнейм в этой социальной сети: ");
+        cleanBuff();
+        fgets(newSocial[social_count].nickname, sizeof(newSocial[social_count].nickname), stdin);
+        newSocial[social_count].nickname[strcspn(newSocial[social_count].nickname, "\n")] = '\0';
+
+        social_count++;
+
+        printf("Хотите добавить ещё одну социальную сеть? (y/n): ");
+        moreSocial = getchar();
+        cleanBuff;
+
+    } while (moreSocial == 'y' || moreSocial == 'Y');
 
     newContact.social = newSocial;
+    newContact.social_count = social_count;
 
     contacts[*count] = newContact;
     (*count)++;
@@ -78,6 +117,10 @@ void editContact(Contact contacts[], int count) {
     }
 
     char nameToEdit[MAX_LENGTH];
+    SocialProfile* newSocial = NULL;
+    int social_count = 0;
+    char moreSocial;
+
     printf("Введите имя контакта для редактирования: ");
     scanf("%s", nameToEdit);
 
@@ -87,25 +130,57 @@ void editContact(Contact contacts[], int count) {
             scanf("%s", contacts[i].name);
 
             printf("Введите новое место работы: ");
-            scanf("%s", contacts[i].job);
+            cleanBuff();
+            fgets(contacts[i].job, sizeof(contacts[i].job), stdin);
+            contacts[i].job[strcspn(contacts[i].job, "\n")] = '\0';
 
             printf("Введите новый номер телефона: ");
-            scanf("%s", contacts[i].phone);
+            cleanBuff();
+            fgets(contacts[i].phone, sizeof(contacts[i].phone), stdin);
+            contacts[i].phone[strcspn(contacts[i].phone, "\n")] = '\0';
 
             printf("Введите новый адрес рабочей электронной почты: ");
-            scanf("%s", contacts[i].email.work);
+            cleanBuff();
+            fgets(contacts[i].email.work, sizeof(contacts[i].email.work), stdin);
+            contacts[i].email.work[strcspn(contacts[i].email.work, "\n")] = '\0';
 
             printf("Введите новый адрес домашней электронной почты: ");
-            scanf("%s", contacts[i].email.home);
+            cleanBuff();
+            fgets(contacts[i].email.home, sizeof(contacts[i].email.home), stdin);
+            contacts[i].email.home[strcspn(contacts[i].email.home, "\n")] = '\0';
 
-            printf("Введите новую социальную сеть: ");
-            scanf("%s", contacts[i].social.social_network);
+            do {
+                newSocial = realloc(newSocial, (social_count + 1) * sizeof(SocialProfile));
+                if (newSocial == NULL) {
+                    printf("Ошибка выделения памяти для социальных сетей.\n");
+                    return;
+                }
 
-            printf("Введите новый адрес на социальную сеть: ");
-            scanf("%s", contacts[i].social.social_address);
+                printf("Введите социальную сеть: ");
+                cleanBuff();
+                fgets(newSocial[social_count].social_network, sizeof(newSocial[social_count].social_network), stdin);
+                newSocial[social_count].social_network[strcspn(newSocial[social_count].social_network, "\n")] = '\0';
 
-            printf("Введите новый никнейм в социальной сети: ");
-            scanf("%s", contacts[i].social.nickname);
+                printf("Введите адрес в этой социальной сети: ");
+                cleanBuff();
+                fgets(newSocial[social_count].social_address, sizeof(newSocial[social_count].social_address), stdin);
+                newSocial[social_count].social_address[strcspn(newSocial[social_count].social_address, "\n")] = '\0';
+
+                printf("Введите никнейм в этой социальной сети: ");
+                cleanBuff();
+                fgets(newSocial[social_count].nickname, sizeof(newSocial[social_count].nickname), stdin);
+                newSocial[social_count].nickname[strcspn(newSocial[social_count].nickname, "\n")] = '\0';
+
+                social_count++;
+
+                printf("Хотите добавить ещё одну социальную сеть? (y/n): ");
+                moreSocial = getchar();
+                cleanBuff;
+
+            } while (moreSocial == 'y' || moreSocial == 'Y');
+
+            contacts[i].social = newSocial;
+            contacts[i].social_count = social_count;
 
             printf("Контакт успешно отредактирован.\n\n");
             return;
@@ -147,9 +222,11 @@ void printContact(Contact contact) {
     printf("Номер телефона: %s\n", contact.phone);
     printf("Адрес рабочей электройнной почты: %s\n", contact.email.work);
     printf("Адрес домашней электройнной почты: %s\n", contact.email.work);
-    printf("Название социальной сети: %s\n", contact.social.social_network);
-    printf("Ссылка на социальную сеть: %s\n", contact.social.social_address);
-    printf("Никнейм: %s\n\n", contact.social.nickname);
+    for (int i = 0; i < contact.social_count; i++) {
+        printf("Название социальной сети: %s\n", contact.social[i].social_network);
+        printf("Ссылка на социальную сеть: %s\n", contact.social[i].social_address);
+        printf("Никнейм: %s\n\n", contact.social[i].nickname);
+    }
 }
 
 int main() {
