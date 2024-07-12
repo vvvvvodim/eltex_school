@@ -1,88 +1,157 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "stdio.h"
+#include "stdarg.h"
 #include "locale.h"
 
-double add(double x, double y) {
-	return x + y;
-}
+typedef int (*operation_func)(int, ...);
 
-double subtract(double x, double y) {
-	return x - y;
-}
-
-double multiply(double x, double y) {
-	return x * y;
-}
-
-double divide(double x, double y) {
-	if (y != 0) return x / y;
-	else {
-		printf("Ошибка: Деление на ноль.\n");
-		return 0;
+int add(int n, ...) {
+	int result = 0;
+	va_list factor;
+	va_start(factor, n);
+	for (int i = 0; i < n; i++) {
+		result += va_arg(factor, int);
 	}
+	va_end(factor);
+	return result;
 }
+
+int subtract(int n, ...) {
+	va_list factor;
+	va_start(factor, n);
+	int result = va_arg(factor, int);
+	for (int i = 1; i < n; i++) {
+		result -= va_arg(factor, int);
+	}
+	va_end(factor);
+	return result;
+}
+
+int multiply(int n, ...) {
+	int result = 1;
+	va_list factor;
+	va_start(factor, n);
+	for (int i = 1; i < n; i++) {
+		result *= va_arg(factor, int);
+	}
+	va_end(factor);
+	return result;
+}
+
+int divide(int n, ...) {
+	va_list factor;
+	va_start(factor, n);
+	int result = va_arg(factor, int);
+	for (int i = 1; i < n; i++) {
+		result /= va_arg(factor, int);
+	}
+	va_end(factor);
+	return result;
+}
+
+int max(int n, ...) {
+	int result = -1000;
+	int temp;
+
+	va_list factor;
+	va_start(factor, n);
+	for (int i = 0; i < n; i++) {
+		temp = va_arg(factor, int);
+		if (temp > result) result = temp;
+	}
+	va_end(factor);
+	return result;
+}
+
+int min(int n, ...) {
+	int result = 1000;
+	int temp;
+
+	va_list factor;
+	va_start(factor, n);
+	for (int i = 0; i < n; i++) {
+		temp = va_arg(factor, int);
+		if (temp < result) result = temp;
+	}
+	va_end(factor);
+	return result;
+}
+
+typedef struct {
+	const char* name;
+	operation_func func;
+} Operation;
+
+Operation functions[] = {
+	{"Сложение", add},
+	{"Вычитание", subtract},
+	{"Умножение", multiply},
+	{"Деление", divide},
+	{"Максимум", max},
+	{"Минимум", min}
+};
+
 
 int main() {
 	setlocale(LC_ALL, "Rus");
 
+	int func_count = sizeof(functions) / sizeof(functions[0]);
 	int tmp;
-	double number1, number2, result;
+	int result = 0;
+	int args_count = 0;
 
 	do
 	{
 		printf("Калькулятор.\n");
 		printf("Выберите действие: \n");
-		printf("1. Сложение\n");
-		printf("2. Вычитание\n");
-		printf("3. Умножение\n");
-		printf("4. Деление\n");
-		printf("5. Выход\n");
+		for (int i = 0; i < func_count; i++) {
+			printf("%d. %s\n", i + 1, functions[i].name);
+		}
+		printf("%d. Выход\n", func_count + 1);
 		scanf("%d", &tmp);
 
-		if (tmp >= 1 && tmp <= 4) {
+		if (tmp >= 1 && tmp <= func_count) {
 			printf("\033[0d\033[2J");
-			printf("Введите первое число: ");
-			if (scanf("%lf", &number1) != 1) {
+			printf("%s\n", functions[tmp - 1].name);
+			printf("---------------\n");
+			printf("Введите количество чисел, которые будут переданы: ");
+			if (scanf("%d", &args_count) != 1) {
 				printf("Ошибка: Пожалуйста, вводите только числа.\n");
 				while (getchar() != '\n'); // Очистка буфера ввода
 				continue;
 			}
-
-			printf("Введите второе число: ");
-			if (scanf("%lf", &number2) != 1) {
-				printf("Ошибка: Пожалуйста, вводите только числа.\n");
-				while (getchar() != '\n'); // Очистка буфера ввода
-				continue;
+			int *numbers = (int*)malloc(args_count*sizeof(int));
+			printf("Введите числа:\n");
+			for (int i = 0; i < args_count; i++) {
+				scanf("%d", &numbers[i]);
 			}
-			printf("\033[0d\033[2J");
-		}
 
-		switch (tmp) {
-		case 1:
-			result = add(number1, number2);
-			printf("%.2lf + %.2lf = %.2lf\n\n", number1, number2, result);
-			break;
-		case 2:
-			result = subtract(number1, number2);
-			printf("%.2lf + %.2lf = %.2lf\n\n", number1, number2, result);
-			break;
-		case 3:
-			result = multiply(number1, number2);
-			printf("%.2lf + %.2lf = %.2lf\n\n", number1, number2, result);
-			break;
-		case 4:
-			result = divide(number1, number2);
-			printf("%.2lf + %.2lf = %.2lf\n\n", number1, number2, result);
-			break;
-		case 5:
-			printf("\033[0d\033[2J");
-			printf("Выход...");
-			break;
-		default:
-			printf("Ошибка: Некорректный выбор.\n");
-			break;
+			switch (args_count) {
+			case 1:
+				result = functions[tmp - 1].func(args_count, numbers[0]);
+				break;
+			case 2:
+				result = functions[tmp - 1].func(args_count, numbers[0], numbers[1]);
+				break;
+			case 3:
+				result = functions[tmp - 1].func(args_count, numbers[0], numbers[1], numbers[2]);
+				break;
+			case 4:
+				result = functions[tmp - 1].func(args_count, numbers[0], numbers[1], numbers[2], numbers[3]);
+				break;
+			case 5:
+				result = functions[tmp - 1].func(args_count, numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]);
+				break;
+			}
+
+			printf("---------------\n");
+			printf("Результат: %d\n\n", result);
+
 		}
-	} while (tmp != 5);
+	} while (tmp != func_count + 1);
+
+	printf("\033[0d\033[2J");
+	printf("Выход...");
 
 	return 0;
 }
